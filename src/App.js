@@ -9,14 +9,6 @@ function Square({ value, onSquareClick }) {
   );
 }
 
-function Undo({ onUndoClick }) {
-  return (
-    <button className="undo" onClick={onUndoClick}>
-      Undo
-    </button>
-  );
-}
-
 function calculateWinner(squares) {
   const lines = [
     [0, 1, 2],
@@ -36,37 +28,40 @@ function calculateWinner(squares) {
   }
   return null;
 }
-/*
-1. want to split or clip the list
-2. then I want to set that as the new history
-3. then I want to update currentSquares
-*/
 
 export default function Game() {
-  const [XisNext, setXisNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
-  const currentSquares = history[history.length - 1];
+  const currentSquares = history[currentMove];
+  const XisNext = currentMove % 2 === 0;
 
   function handlePlay(nextSquares) {
-    setHistory([...history, nextSquares]);
-    setXisNext(!XisNext);
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
   }
 
   function jumpTo(nextMove) {
-    // setHistory(
+    setCurrentMove(nextMove);
   }
 
   const moves = history.map((squares, move) => {
     let description;
-    if (move > 0) {
-      description = "Go to Move # " + move;
+    if (move === currentMove) {
+      description = "You are currently at move " + currentMove;
+      return (
+        <li key={move}>
+          <p>{description}</p>
+        </li>
+      );
+    } else if (move > 0) {
+      description = "Go to move " + move;
     } else {
       description = "Go to game start";
     }
     return (
       <li key={move}>
-        <button onClick={() => jumpTo(moves)}>{description}</button>
+        <button onClick={() => jumpTo(move)}>{description}</button>
       </li>
     );
   });
@@ -75,6 +70,9 @@ export default function Game() {
     <div className="game">
       <div className="game-board">
         <Board XisNext={XisNext} squares={currentSquares} onPlay={handlePlay} />
+        <div>
+          {/* <button onClick={() => sort()}>Ascending/Descending</button> */}
+        </div>
       </div>
       <div className="game-info">
         <ol>{moves}</ol>
@@ -107,13 +105,29 @@ function Board({ XisNext, squares, onPlay }) {
     status = "Next Player: " + (XisNext ? "X" : "O");
   }
 
+  const boardRow = () => {
+    let boardSquares = [];
+    for (let i = 0; i < 9; i++) {
+      boardSquares.push(i);
+    }
+
+    const board = boardSquares.map((value, key) => {
+      <Square
+        value={squares[value]}
+        onSquareClick={() => handleClick(value)}
+      />;
+    });
+    return <div className="board-row">board</div>;
+  };
+
   return (
     <>
       <div className="status">{status}</div>
-      <div className="board-row">
-        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+      {board()}
+      {/* <div className="board-row">
+        <Square value={squares[3]} onSquareClick={() => handleClick(0)} />
+        <Square value={squares[4]} onSquareClick={() => handleClick(1)} />
+        <Square value={squares[5]} onSquareClick={() => handleClick(2)} />
       </div>
       <div className="board-row">
         <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
@@ -124,7 +138,7 @@ function Board({ XisNext, squares, onPlay }) {
         <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
         <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
         <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-      </div>
+      </div> */}
     </>
   );
 }
